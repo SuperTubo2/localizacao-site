@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Verificação de Entrega</title>
+  <title>Verificação de Atendimento</title>
   <style>
     body {
       background-color: #F9F9FF;
@@ -18,7 +18,7 @@
     }
 
     button {
-      background-color: #FF0000;
+      background-color: #1B54DA;
       color: white;
       padding: 10px 20px;
       border: none;
@@ -45,7 +45,7 @@
   </style>
 </head>
 <body>
-  <h1>Verifique se entregamos na sua região</h1>
+  <h1>Verifique se atendemos sua cidade</h1>
   <button onclick="obterLocalizacao()">Verificar Localização</button>
   <div id="endereco"></div>
 
@@ -71,10 +71,9 @@
 
         if (cidade) {
           const permitido = cidadesPermitidas.includes(cidade);
-          document.getElementById('endereco').innerHTML = `
-            Cidade detectada: <strong>${cidade}</strong><br>
-            ${permitido ? "✅ Entregamos na sua região!" : "❌ Infelizmente ainda não entregamos na sua região."}
-          `;
+          document.getElementById('endereco').innerHTML = permitido
+            ? `✅ Atendemos em sua cidade: <strong>${cidade}</strong>`
+            : `❌ Ainda não atendemos em sua cidade: <strong>${cidade}</strong>`;
         } else {
           document.getElementById('endereco').textContent = "Não foi possível identificar sua cidade.";
         }
