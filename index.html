@@ -1,54 +1,35 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <title>Entrega por Localização</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-    .entrega {
-      font-size: 1.2em;
-      color: green;
-      margin-top: 20px;
-    }
-  </style>
-</head>
-<body>
-  <h1>Bem-vindo!</h1>
-  <p class="entrega" id="entrega">Verificando sua localização...</p>
+<script>
+  function mostrarCidade(cidade) {
+    document.getElementById("entrega").innerText = `Entregamos em: ${cidade}`;
+  }
 
-  <script>
-    function mostrarCidade(cidade) {
-      document.getElementById("entrega").innerText = `Entregamos em: ${cidade}`;
-    }
+  function erroLocalizacao() {
+    document.getElementById("entrega").innerText = "Não conseguimos determinar sua cidade.";
+  }
 
-    function erroLocalizacao() {
-      document.getElementById("entrega").innerText = "Não conseguimos determinar sua cidade.";
-    }
+  function obterCidade(latitude, longitude) {
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
+      .then(response => response.json())
+      .then(data => {
+        const cidade = data.address.city ||
+                       data.address.town ||
+                       data.address.village ||
+                       data.address.county || 
+                       "sua região";
+        mostrarCidade(cidade);
+      })
+      .catch(() => erroLocalizacao());
+  }
 
-    function obterCidade(latitude, longitude) {
-      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
-        .then(response => response.json())
-        .then(data => {
-          const cidade = data.address.city || data.address.town || data.address.village || "sua região";
-          mostrarCidade(cidade);
-        })
-        .catch(() => erroLocalizacao());
-    }
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        position => {
-          const { latitude, longitude } = position.coords;
-          obterCidade(latitude, longitude);
-        },
-        erroLocalizacao
-      );
-    } else {
-      erroLocalizacao();
-    }
-  </script>
-</body>
-</html>
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        const { latitude, longitude } = position.coords;
+        obterCidade(latitude, longitude);
+      },
+      erroLocalizacao
+    );
+  } else {
+    erroLocalizacao();
+  }
+</script>
