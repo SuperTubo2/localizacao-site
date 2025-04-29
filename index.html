@@ -3,74 +3,84 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SuperTubo - Verifique sua Localização</title>
+  <title>Verificar Área de Entrega - SuperTubo</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #F6F1EB;
-      color: #0B2C3C;
+      background-color: #F9F9FF;
+      font-family: Arial, sans-serif;
       text-align: center;
-      padding: 2rem;
-    }
-    header img {
-      max-width: 200px;
+      padding: 20px;
+      color: #333;
     }
     h1 {
-      color: #C43725;
+      color: #2C3E50;
+    }
+    #resultado {
+      margin-top: 20px;
+      font-size: 1.2em;
+      font-weight: bold;
     }
     button {
-      background-color: #0B2C3C;
-      color: #fff;
+      padding: 10px 20px;
+      font-size: 1em;
+      background-color: #2C3E50;
+      color: white;
       border: none;
-      padding: 0.7rem 1.5rem;
-      font-size: 1rem;
       border-radius: 5px;
       cursor: pointer;
     }
     button:hover {
-      background-color: #072029;
+      background-color: #1A252F;
     }
-    #resultado {
-      margin-top: 1.5rem;
-      font-size: 1.2rem;
+    img {
+      max-width: 150px;
+      margin-bottom: 20px;
     }
   </style>
 </head>
 <body>
-  <header>
-    <img src="D6C98425-89F4-49B8-B074-E43F3083357F%20(1).PNG" alt="Logo SuperTubo">
-    <h1>Descubra se entregamos na sua cidade</h1>
-  </header>
+  <img src="logo.png" alt="Logo SuperTubo">
+  <h1>Verifique se estamos na sua região</h1>
   <button onclick="verificarLocalizacao()">Verificar Localização</button>
-  <p id="resultado"></p>
+  <div id="resultado"></div>
 
   <script>
-    const cidadesAtendidas = [
-      "Santo André", "São Bernardo do Campo", "São Caetano do Sul",
-      "Diadema", "Mauá", "Ribeirão Pires", "Rio Grande da Serra",
-      "Suzano", "Mogi das Cruzes"
+    const cidadesPermitidas = [
+      "Santo André",
+      "São Bernardo do Campo",
+      "São Caetano do Sul",
+      "Diadema",
+      "Mauá",
+      "Ribeirão Pires",
+      "Rio Grande da Serra",
+      "Suzano",
+      "Mogi das Cruzes"
     ];
 
     function verificarLocalizacao() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async (posicao) => {
-          const { latitude, longitude } = posicao.coords;
-          const resposta = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-          const dados = await resposta.json();
-
-          const cidade = dados.address.city || dados.address.town || dados.address.village;
-
-          if (cidade && cidadesAtendidas.includes(cidade)) {
-            document.getElementById("resultado").textContent = `Ótimo! Realizamos entregas em ${cidade}.`;
-          } else {
-            document.getElementById("resultado").textContent = "Infelizmente, ainda não realizamos entregas na sua cidade.";
-          }
-        }, () => {
-          document.getElementById("resultado").textContent = "Não foi possível obter sua localização.";
-        });
-      } else {
-        document.getElementById("resultado").textContent = "Geolocalização não é suportada pelo seu navegador.";
+      if (!navigator.geolocation) {
+        alert("Geolocalização não é suportada por este navegador.");
+        return;
       }
+
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const { latitude, longitude } = position.coords;
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
+        const data = await response.json();
+
+        const cidade = data.address.city || data.address.town || data.address.village || "";
+        const resultado = document.getElementById("resultado");
+
+        if (cidadesPermitidas.includes(cidade)) {
+          resultado.innerText = `Estamos na sua região: ${cidade}`;
+          resultado.style.color = "green";
+        } else {
+          resultado.innerText = `Infelizmente ainda não atendemos ${cidade}.`;
+          resultado.style.color = "red";
+        }
+      }, () => {
+        alert("Não foi possível obter sua localização.");
+      });
     }
   </script>
 </body>
