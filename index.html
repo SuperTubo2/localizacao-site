@@ -2,34 +2,52 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Localização</title>
+  <title>Entrega por Localização</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .entrega {
+      font-size: 1.2em;
+      color: green;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
-  <h1>Descubra sua localização</h1>
-  <button onclick="obterLocalizacao()">Obter Localização</button>
-  <p id="endereco">Clique no botão para ver o endereço.</p>
+  <h1>Bem-vindo!</h1>
+  <p class="entrega" id="entrega">Verificando sua localização...</p>
 
   <script>
-    function obterLocalizacao() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(pos) {
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
+    function mostrarCidade(cidade) {
+      document.getElementById("entrega").innerText = `Entregamos em: ${cidade}`;
+    }
 
-          fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`)
-            .then(res => res.json())
-            .then(data => {
-              document.getElementById("endereco").innerText = "Endereço aproximado: " + data.display_name;
-            })
-            .catch(() => {
-              document.getElementById("endereco").innerText = "Erro ao buscar endereço.";
-            });
-        }, function(err) {
-          document.getElementById("endereco").innerText = "Erro de localização: " + err.message;
-        });
-      } else {
-        document.getElementById("endereco").innerText = "Geolocalização não suportada.";
-      }
+    function erroLocalizacao() {
+      document.getElementById("entrega").innerText = "Não conseguimos determinar sua cidade.";
+    }
+
+    function obterCidade(latitude, longitude) {
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
+        .then(response => response.json())
+        .then(data => {
+          const cidade = data.address.city || data.address.town || data.address.village || "sua região";
+          mostrarCidade(cidade);
+        })
+        .catch(() => erroLocalizacao());
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          const { latitude, longitude } = position.coords;
+          obterCidade(latitude, longitude);
+        },
+        erroLocalizacao
+      );
+    } else {
+      erroLocalizacao();
     }
   </script>
 </body>
