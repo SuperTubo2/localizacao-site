@@ -2,82 +2,75 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Entrega por Localização</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SuperTubo - Verifique sua Localização</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #F6F1EB;
+      color: #0B2C3C;
+      text-align: center;
+      padding: 2rem;
     }
-    .entrega {
-      font-size: 1.2em;
-      color: green;
-      margin-top: 20px;
+    header img {
+      max-width: 200px;
     }
-    .fora {
-      color: red;
+    h1 {
+      color: #C43725;
+    }
+    button {
+      background-color: #0B2C3C;
+      color: #fff;
+      border: none;
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #072029;
+    }
+    #resultado {
+      margin-top: 1.5rem;
+      font-size: 1.2rem;
     }
   </style>
 </head>
 <body>
-  <h1>Bem-vindo!</h1>
-  <p class="entrega" id="entrega">Verificando sua localização...</p>
+  <header>
+    <img src="D6C98425-89F4-49B8-B074-E43F3083357F%20(1).PNG" alt="Logo SuperTubo">
+    <h1>Descubra se entregamos na sua cidade</h1>
+  </header>
+  <button onclick="verificarLocalizacao()">Verificar Localização</button>
+  <p id="resultado"></p>
 
   <script>
-    const cidadesPermitidas = [
-      "santo andré",
-      "são bernardo do campo",
-      "são caetano do sul",
-      "diadema",
-      "mauá",
-      "ribeirão pires",
-      "rio grande da serra",
-      "suzano",
-      "mogi das cruzes"
+    const cidadesAtendidas = [
+      "Santo André", "São Bernardo do Campo", "São Caetano do Sul",
+      "Diadema", "Mauá", "Ribeirão Pires", "Rio Grande da Serra",
+      "Suzano", "Mogi das Cruzes"
     ];
 
-    function mostrarEntrega(cidade) {
-      const cidadeFormatada = cidade.toLowerCase();
+    function verificarLocalizacao() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async (posicao) => {
+          const { latitude, longitude } = posicao.coords;
+          const resposta = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+          const dados = await resposta.json();
 
-      const entregaDisponivel = cidadesPermitidas.some(nome =>
-        cidadeFormatada.includes(nome)
-      );
+          const cidade = dados.address.city || dados.address.town || dados.address.village;
 
-      if (entregaDisponivel) {
-        document.getElementById("entrega").innerText = `Entregamos em: ${cidade}`;
+          if (cidade && cidadesAtendidas.includes(cidade)) {
+            document.getElementById("resultado").textContent = `Ótimo! Realizamos entregas em ${cidade}.`;
+          } else {
+            document.getElementById("resultado").textContent = "Infelizmente, ainda não realizamos entregas na sua cidade.";
+          }
+        }, () => {
+          document.getElementById("resultado").textContent = "Não foi possível obter sua localização.";
+        });
       } else {
-        document.getElementById("entrega").innerText = "Ainda não entregamos na sua região 😔";
-        document.getElementById("entrega").classList.add("fora");
+        document.getElementById("resultado").textContent = "Geolocalização não é suportada pelo seu navegador.";
       }
-    }
-
-    function erroLocalizacao() {
-      document.getElementById("entrega").innerText = "Não conseguimos determinar sua cidade.";
-    }
-
-    function obterCidade(latitude, longitude) {
-      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
-        .then(response => response.json())
-        .then(data => {
-          const cidade = data.address.city ||
-                         data.address.town ||
-                         data.address.village ||
-                         data.address.county || 
-                         "sua região";
-          mostrarEntrega(cidade);
-        })
-        .catch(() => erroLocalizacao());
-    }
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        position => {
-          const { latitude, longitude } = position.coords;
-          obterCidade(latitude, longitude);
-        },
-        erroLocalizacao
-      );
-    } else {
-      erroLocalizacao();
     }
   </script>
 </body>
