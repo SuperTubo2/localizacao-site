@@ -13,6 +13,9 @@
       color: green;
       margin-top: 20px;
     }
+    .fora {
+      color: red;
+    }
   </style>
 </head>
 <body>
@@ -20,8 +23,31 @@
   <p class="entrega" id="entrega">Verificando sua localização...</p>
 
   <script>
-    function mostrarCidade(cidade) {
-      document.getElementById("entrega").innerText = `Entregamos em: ${cidade}`;
+    const cidadesPermitidas = [
+      "santo andré",
+      "são bernardo do campo",
+      "são caetano do sul",
+      "diadema",
+      "mauá",
+      "ribeirão pires",
+      "rio grande da serra",
+      "suzano",
+      "mogi das cruzes"
+    ];
+
+    function mostrarEntrega(cidade) {
+      const cidadeFormatada = cidade.toLowerCase();
+
+      const entregaDisponivel = cidadesPermitidas.some(nome =>
+        cidadeFormatada.includes(nome)
+      );
+
+      if (entregaDisponivel) {
+        document.getElementById("entrega").innerText = `Entregamos em: ${cidade}`;
+      } else {
+        document.getElementById("entrega").innerText = "Ainda não entregamos na sua região 😔";
+        document.getElementById("entrega").classList.add("fora");
+      }
     }
 
     function erroLocalizacao() {
@@ -35,9 +61,9 @@
           const cidade = data.address.city ||
                          data.address.town ||
                          data.address.village ||
-                         data.address.county ||
+                         data.address.county || 
                          "sua região";
-          mostrarCidade(cidade);
+          mostrarEntrega(cidade);
         })
         .catch(() => erroLocalizacao());
     }
