@@ -1,85 +1,85 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verificar Área de Entrega - SuperTubo</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Verificação de Entrega</title>
   <style>
     body {
       background-color: #F9F9FF;
       font-family: Arial, sans-serif;
-      text-align: center;
       padding: 20px;
       color: #333;
+      text-align: center;
     }
+
     h1 {
-      color: #2C3E50;
+      color: #222;
     }
-    #resultado {
-      margin-top: 20px;
-      font-size: 1.2em;
-      font-weight: bold;
-    }
+
     button {
-      padding: 10px 20px;
-      font-size: 1em;
-      background-color: #2C3E50;
+      background-color: #FF0000;
       color: white;
+      padding: 10px 20px;
       border: none;
-      border-radius: 5px;
+      border-radius: 8px;
       cursor: pointer;
+      font-size: 16px;
+      margin-top: 20px;
     }
-    button:hover {
-      background-color: #1A252F;
+
+    #endereco {
+      margin-top: 20px;
+      font-size: 18px;
     }
-    img {
-      max-width: 150px;
-      margin-bottom: 20px;
+
+    .voltar {
+      margin-top: 40px;
+      display: inline-block;
+      text-decoration: none;
+      color: white;
+      background-color: #222;
+      padding: 10px 20px;
+      border-radius: 6px;
     }
   </style>
 </head>
 <body>
-  <img src="logo.png" alt="Logo SuperTubo">
-  <h1>Verifique se estamos na sua região</h1>
-  <button onclick="verificarLocalizacao()">Verificar Localização</button>
-  <div id="resultado"></div>
+  <h1>Verifique se entregamos na sua região</h1>
+  <button onclick="obterLocalizacao()">Verificar Localização</button>
+  <div id="endereco"></div>
+
+  <a href="https://super-tubo-z07p11e.gamma.site/" class="voltar">Voltar para o site</a>
 
   <script>
     const cidadesPermitidas = [
-      "Santo André",
-      "São Bernardo do Campo",
-      "São Caetano do Sul",
-      "Diadema",
-      "Mauá",
-      "Ribeirão Pires",
-      "Rio Grande da Serra",
-      "Suzano",
-      "Mogi das Cruzes"
+      "Santo André", "São Bernardo do Campo", "São Caetano do Sul", "Diadema",
+      "Mauá", "Ribeirão Pires", "Rio Grande da Serra", "Suzano", "Mogi das Cruzes"
     ];
 
-    function verificarLocalizacao() {
+    function obterLocalizacao() {
       if (!navigator.geolocation) {
-        alert("Geolocalização não é suportada por este navegador.");
+        document.getElementById('endereco').textContent = "Geolocalização não é suportada pelo seu navegador.";
         return;
       }
 
       navigator.geolocation.getCurrentPosition(async (position) => {
         const { latitude, longitude } = position.coords;
-        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`);
         const data = await response.json();
-
         const cidade = data.address.city || data.address.town || data.address.village || "";
-        const resultado = document.getElementById("resultado");
 
-        if (cidadesPermitidas.includes(cidade)) {
-          resultado.innerText = `Estamos na sua região: ${cidade}`;
-          resultado.style.color = "green";
+        if (cidade) {
+          const permitido = cidadesPermitidas.includes(cidade);
+          document.getElementById('endereco').innerHTML = `
+            Cidade detectada: <strong>${cidade}</strong><br>
+            ${permitido ? "✅ Entregamos na sua região!" : "❌ Infelizmente ainda não entregamos na sua região."}
+          `;
         } else {
-          resultado.innerText = `Infelizmente ainda não atendemos ${cidade}.`;
-          resultado.style.color = "red";
+          document.getElementById('endereco').textContent = "Não foi possível identificar sua cidade.";
         }
       }, () => {
-        alert("Não foi possível obter sua localização.");
+        document.getElementById('endereco').textContent = "Não foi possível obter sua localização.";
       });
     }
   </script>
