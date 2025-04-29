@@ -2,40 +2,35 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Minha Localização</title>
+  <title>Localização</title>
 </head>
 <body>
-
-  <h1>Minha Localização</h1>
+  <h1>Descubra sua localização</h1>
   <button onclick="obterLocalizacao()">Obter Localização</button>
-
-  <p id="endereco">Clique no botão para ver seu endereço.</p>
+  <p id="endereco">Clique no botão para ver o endereço.</p>
 
   <script>
     function obterLocalizacao() {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function(pos) {
-          var latitude = pos.coords.latitude;
-          var longitude = pos.coords.longitude;
-          
-          fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`)
-            .then(response => response.json())
-            .then(data => {
-              document.getElementById("endereco").innerText = "Endereço: " + data.display_name;
-            })
-            .catch(error => {
-              document.getElementById("endereco").innerText = "Erro ao buscar endereço: " + error;
-            });
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
 
-        }, function(error) {
-          document.getElementById("endereco").innerText = "Erro ao obter localização: " + error.message;
+          fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`)
+            .then(res => res.json())
+            .then(data => {
+              document.getElementById("endereco").innerText = "Endereço aproximado: " + data.display_name;
+            })
+            .catch(() => {
+              document.getElementById("endereco").innerText = "Erro ao buscar endereço.";
+            });
+        }, function(err) {
+          document.getElementById("endereco").innerText = "Erro de localização: " + err.message;
         });
       } else {
         document.getElementById("endereco").innerText = "Geolocalização não suportada.";
       }
     }
   </script>
-
 </body>
 </html>
