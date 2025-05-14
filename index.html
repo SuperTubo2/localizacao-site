@@ -9,17 +9,27 @@
       font-family: Arial, sans-serif;
       text-align: center;
       padding: 40px;
-      background-color: #f4f4f4;
+      background-color: #0a0a23;
+      color: white;
     }
 
     h1 {
-      color: #333;
+      color: white;
     }
 
     button {
-      padding: 10px;
+      padding: 12px 20px;
       font-size: 16px;
-      margin: 10px;
+      background-color: #1a1a40;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #333366;
     }
 
     .resultado {
@@ -29,11 +39,11 @@
     }
 
     .sucesso {
-      color: green;
+      color: #00ff88;
     }
 
     .erro {
-      color: red;
+      color: #ff4f4f;
     }
 
     a.whatsapp {
@@ -83,25 +93,23 @@
     }
 
     function verificarProximidade(posicao) {
-      const latitudeUsuario = posicao.coords.latitude;
-      const longitudeUsuario = posicao.coords.longitude;
+      const lat = posicao.coords.latitude;
+      const lon = posicao.coords.longitude;
       const resultado = document.getElementById("resultado");
 
-      let cidadeAtendida = false;
+      let cidadeAtendida = null;
 
       for (let cidade of cidadesAtendidas) {
-        // Cálculo simples para verificar se a cidade está dentro de um raio de 20 km da localização do usuário (aproximado)
-        const distancia = calcularDistancia(latitudeUsuario, longitudeUsuario, cidade.latitude, cidade.longitude);
-        
-        if (distancia <= 20) { // Distância máxima de 20 km
-          cidadeAtendida = true;
+        const distancia = calcularDistancia(lat, lon, cidade.latitude, cidade.longitude);
+        if (distancia <= 20) {
+          cidadeAtendida = cidade.nome;
           break;
         }
       }
 
       if (cidadeAtendida) {
         resultado.innerHTML = `
-          <div class="sucesso">✅ Sim, atendemos na sua cidade!</div>
+          <div class="sucesso">✅ Sim, atendemos em <strong>${cidadeAtendida}</strong>!</div>
           <a class="whatsapp" href="https://wa.me/5511933285059" target="_blank">
             Fale conosco no WhatsApp
           </a>
@@ -111,20 +119,19 @@
       }
     }
 
-    function exibirErro() {
-      alert("Não foi possível obter sua localização.");
+    function exibirErro(error) {
+      alert("Não foi possível obter sua localização. Por favor, ative a geolocalização e tente novamente.");
     }
 
-    // Função para calcular a distância entre dois pontos (em km) usando a fórmula de Haversine
     function calcularDistancia(lat1, lon1, lat2, lon2) {
-      const R = 6371; // Raio da Terra em km
+      const R = 6371;
       const dLat = degToRad(lat2 - lat1);
       const dLon = degToRad(lon2 - lon1);
       const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
                 Math.cos(degToRad(lat1)) * Math.cos(degToRad(lat2)) *
                 Math.sin(dLon / 2) * Math.sin(dLon / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      return R * c; // Distância em km
+      return R * c;
     }
 
     function degToRad(deg) {
