@@ -1,94 +1,109 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Super Tubo Desentupidora - Verificador de Localização</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Verificação de Localização</title>
   <style>
     body {
-      margin: 0;
-      font-family: 'Arial', sans-serif;
-      background-color: #111;
-      color: #fff;
+      background-color: #D2DDF8;
+      font-family: Arial, sans-serif;
       text-align: center;
-      padding: 2rem;
+      padding: 40px;
     }
-    h1 {
-      color: #00ff84;
-      margin-bottom: 1.5rem;
-    }
-    input {
-      padding: 1rem;
-      font-size: 1rem;
-      border-radius: 8px;
-      border: none;
-      width: 250px;
-      max-width: 80%;
-      margin-right: 0.5rem;
-    }
+
     button {
-      padding: 1rem;
-      font-size: 1rem;
-      border-radius: 8px;
-      border: none;
-      background-color: #00ff84;
-      color: #000;
+      background-color: white;
+      color: #002060;
+      border: 2px solid #002060;
+      padding: 15px 25px;
+      border-radius: 30px;
+      font-size: 16px;
       cursor: pointer;
+      transition: 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
+
     button:hover {
-      background-color: #00cc6a;
+      background-color: #002060;
+      color: white;
     }
+
     #resultado {
-      margin-top: 2rem;
-      font-size: 1.25rem;
+      margin-top: 30px;
+      font-size: 18px;
+      color: #002060;
     }
+
     .sim {
-      color: #00ff84;
-    }
-    .nao {
-      color: #ff4e4e;
-    }
-    a {
-      display: inline-block;
-      margin-top: 1rem;
-      text-decoration: none;
-      color: #00ff84;
+      color: green;
       font-weight: bold;
+    }
+
+    .nao {
+      color: red;
+      font-weight: bold;
+    }
+
+    a.whatsapp {
+      display: inline-block;
+      margin-top: 10px;
+      background-color: #25d366;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 25px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+
+    a.whatsapp:hover {
+      background-color: #1da851;
     }
   </style>
 </head>
 <body>
-  <h1>Verifique se atendemos sua cidade</h1>
-  <input type="text" id="cidade" placeholder="Digite sua cidade" />
-  <button onclick="verificarCidade()">Verificar</button>
+
+  <h2>Deseja saber se atendemos sua região?</h2>
+  <button onclick="verificarLocalizacao()">Verificar Localização</button>
   <div id="resultado"></div>
 
   <script>
-    const cidadesAtendidas = [
-      "Santo André", "São Bernardo do Campo", "São Caetano do Sul", "Diadema", "Mauá",
-      "Ribeirão Pires", "Rio Grande da Serra", "Suzano", "Mogi das Cruzes", "Guarulhos",
-      "São José dos Campos", "São Paulo", "Sorocaba", "Barueri", "Itaquaquecetuba", "Igaratá"
-    ];
-
-    function removerAcentos(str) {
-      return str.normalize("NFD").replace(/\u0300-\u036f/g, "").toLowerCase();
-    }
-
-    function verificarCidade() {
-      const input = document.getElementById("cidade").value.trim();
-      const resultado = document.getElementById("resultado");
-      const cidadeDigitada = removerAcentos(input);
-
-      const cidadeEncontrada = cidadesAtendidas.find(cidade =>
-        removerAcentos(cidade) === cidadeDigitada
-      );
-
-      if (cidadeEncontrada) {
-        resultado.innerHTML = `✅ <span class="sim">Sim, atendemos em <strong>${cidadeEncontrada}</strong>!</span><br><a href="https://wa.me/5511933285059" target="_blank">Fale conosco no WhatsApp</a>`;
-      } else {
-        resultado.innerHTML = `❌ <span class="nao">Infelizmente ainda não atendemos em <strong>${input}</strong>.</span>`;
+    function verificarLocalizacao() {
+      if (!navigator.geolocation) {
+        document.getElementById("resultado").innerHTML = '<p class="nao">Geolocalização não suportada pelo navegador.</p>';
+        return;
       }
+
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+
+        try {
+          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+          const data = await response.json();
+
+          const cidade = data.address.city || data.address.town || data.address.village || data.address.county;
+          const estado = data.address.state;
+
+          if (estado === "São Paulo") {
+            document.getElementById("resultado").innerHTML = `
+              <p class="sim">✅ Sim, atendemos em <strong>${cidade}</strong>!</p>
+              <a href="https://wa.me/5511933285059" target="_blank" class="whatsapp">Fale conosco no WhatsApp</a>
+            `;
+          } else {
+            document.getElementById("resultado").innerHTML = `
+              <p class="nao">❌ Infelizmente ainda não atendemos sua cidade.</p>
+            `;
+          }
+        } catch (error) {
+          document.getElementById("resultado").innerHTML = '<p class="nao">Erro ao obter localização. Tente novamente.</p>';
+        }
+      }, () => {
+        document.getElementById("resultado").innerHTML = '<p class="nao">Permissão de localização negada.</p>';
+      });
     }
   </script>
+
 </body>
 </html>
