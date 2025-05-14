@@ -16,7 +16,7 @@
       color: #333;
     }
 
-    input, button {
+    button {
       padding: 10px;
       font-size: 16px;
       margin: 10px;
@@ -50,37 +50,85 @@
 <body>
 
   <h1>Verifique se atendemos sua cidade</h1>
-  <input type="text" id="cidade" placeholder="Digite sua cidade..." />
-  <button onclick="verificarCidade()">Verificar</button>
+  <button onclick="obterLocalizacao()">Verificar Localização</button>
 
   <div class="resultado" id="resultado"></div>
 
   <script>
     const cidadesAtendidas = [
-      "Santo André", "São Bernardo do Campo", "São Caetano do Sul", "Diadema",
-      "Mauá", "Ribeirão Pires", "Rio Grande da Serra", "Suzano", "Mogi das Cruzes",
-      "Guarulhos", "São José dos Campos", "São Paulo", "Sorocaba", "Barueri",
-      "Itaquaquecetuba", "Igaratá"
+      { nome: "Santo André", latitude: -23.6480, longitude: -46.5388 },
+      { nome: "São Bernardo do Campo", latitude: -23.7055, longitude: -46.5647 },
+      { nome: "São Caetano do Sul", latitude: -23.6242, longitude: -46.5657 },
+      { nome: "Diadema", latitude: -23.6896, longitude: -46.5654 },
+      { nome: "Mauá", latitude: -23.6671, longitude: -46.4600 },
+      { nome: "Ribeirão Pires", latitude: -23.7254, longitude: -46.5644 },
+      { nome: "Rio Grande da Serra", latitude: -23.8007, longitude: -46.4813 },
+      { nome: "Suzano", latitude: -23.5428, longitude: -46.3084 },
+      { nome: "Mogi das Cruzes", latitude: -23.1852, longitude: -46.1876 },
+      { nome: "Guarulhos", latitude: -23.4646, longitude: -46.5333 },
+      { nome: "São José dos Campos", latitude: -23.1896, longitude: -45.9009 },
+      { nome: "São Paulo", latitude: -23.5505, longitude: -46.6333 },
+      { nome: "Sorocaba", latitude: -23.5017, longitude: -47.4586 },
+      { nome: "Barueri", latitude: -23.5207, longitude: -46.8762 },
+      { nome: "Itaquaquecetuba", latitude: -23.4603, longitude: -46.3497 },
+      { nome: "Igaratá", latitude: -23.1247, longitude: -45.8802 }
     ];
 
-    function verificarCidade() {
-      const input = document.getElementById("cidade").value.trim().toLowerCase();
+    function obterLocalizacao() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(verificarProximidade, exibirErro);
+      } else {
+        alert("Geolocalização não é suportada por este navegador.");
+      }
+    }
+
+    function verificarProximidade(posicao) {
+      const latitudeUsuario = posicao.coords.latitude;
+      const longitudeUsuario = posicao.coords.longitude;
       const resultado = document.getElementById("resultado");
 
-      const cidadeEncontrada = cidadesAtendidas.some(cidade => 
-        cidade.toLowerCase().includes(input)
-      );
+      let cidadeAtendida = false;
 
-      if (cidadeEncontrada) {
+      for (let cidade of cidadesAtendidas) {
+        // Cálculo simples para verificar se a cidade está dentro de um raio de 20 km da localização do usuário (aproximado)
+        const distancia = calcularDistancia(latitudeUsuario, longitudeUsuario, cidade.latitude, cidade.longitude);
+        
+        if (distancia <= 20) { // Distância máxima de 20 km
+          cidadeAtendida = true;
+          break;
+        }
+      }
+
+      if (cidadeAtendida) {
         resultado.innerHTML = `
-          <div class="sucesso">✅ Sim, atendemos em sua cidade!</div>
+          <div class="sucesso">✅ Sim, atendemos na sua cidade!</div>
           <a class="whatsapp" href="https://wa.me/5511933285059" target="_blank">
             Fale conosco no WhatsApp
           </a>
         `;
       } else {
-        resultado.innerHTML = `<div class="erro">❌ Infelizmente ainda não atendemos essa cidade.</div>`;
+        resultado.innerHTML = `<div class="erro">❌ Infelizmente ainda não atendemos na sua cidade.</div>`;
       }
+    }
+
+    function exibirErro() {
+      alert("Não foi possível obter sua localização.");
+    }
+
+    // Função para calcular a distância entre dois pontos (em km) usando a fórmula de Haversine
+    function calcularDistancia(lat1, lon1, lat2, lon2) {
+      const R = 6371; // Raio da Terra em km
+      const dLat = degToRad(lat2 - lat1);
+      const dLon = degToRad(lon2 - lon1);
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(degToRad(lat1)) * Math.cos(degToRad(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c; // Distância em km
+    }
+
+    function degToRad(deg) {
+      return deg * (Math.PI / 180);
     }
   </script>
 
