@@ -2,57 +2,66 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Verificar Cidade</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Super Tubo Desentupidora - Verificador de Localização</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
       margin: 0;
-    }
-    .container {
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      font-family: 'Arial', sans-serif;
+      background-color: #111;
+      color: #fff;
       text-align: center;
+      padding: 2rem;
     }
-    input, button {
-      padding: 10px;
-      font-size: 16px;
-      margin: 10px 5px;
+    h1 {
+      color: #00ff84;
+      margin-bottom: 1.5rem;
+    }
+    input {
+      padding: 1rem;
+      font-size: 1rem;
       border-radius: 8px;
-      border: 1px solid #ccc;
+      border: none;
+      width: 250px;
+      max-width: 80%;
+      margin-right: 0.5rem;
     }
     button {
-      background-color: #28a745;
-      color: white;
+      padding: 1rem;
+      font-size: 1rem;
+      border-radius: 8px;
       border: none;
+      background-color: #00ff84;
+      color: #000;
       cursor: pointer;
     }
-    .resultado {
-      margin-top: 20px;
-      font-weight: bold;
-      font-size: 18px;
+    button:hover {
+      background-color: #00cc6a;
+    }
+    #resultado {
+      margin-top: 2rem;
+      font-size: 1.25rem;
     }
     .sim {
-      color: green;
+      color: #00ff84;
     }
     .nao {
-      color: red;
+      color: #ff4e4e;
+    }
+    a {
+      display: inline-block;
+      margin-top: 1rem;
+      text-decoration: none;
+      color: #00ff84;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Verifique se atendemos sua cidade</h2>
-    <input type="text" id="cidade" placeholder="Digite sua cidade">
-    <button onclick="verificarCidade()">Verificar</button>
-    <div class="resultado" id="resultado"></div>
-  </div>
+  <h1>Verifique se atendemos sua cidade</h1>
+  <input type="text" id="cidade" placeholder="Digite sua cidade" />
+  <button onclick="verificarCidade()">Verificar</button>
+  <div id="resultado"></div>
 
   <script>
     const cidadesAtendidas = [
@@ -61,15 +70,23 @@
       "São José dos Campos", "São Paulo", "Sorocaba", "Barueri", "Itaquaquecetuba", "Igaratá"
     ];
 
+    function removerAcentos(str) {
+      return str.normalize("NFD").replace(/\u0300-\u036f/g, "").toLowerCase();
+    }
+
     function verificarCidade() {
       const input = document.getElementById("cidade").value.trim();
       const resultado = document.getElementById("resultado");
-      const cidadeFormatada = input.charAt(0).toUpperCase() + input.slice(1).toLowerCase();
+      const cidadeDigitada = removerAcentos(input);
 
-      if (cidadesAtendidas.some(cidade => cidade.toLowerCase() === cidadeFormatada.toLowerCase())) {
-        resultado.innerHTML = `✅ <span class="sim">Sim, atendemos em <strong>${cidadeFormatada}</strong>!</span> <br><a href="https://wa.me/5511933285059" target="_blank">Fale conosco no WhatsApp</a>`;
+      const cidadeEncontrada = cidadesAtendidas.find(cidade =>
+        removerAcentos(cidade) === cidadeDigitada
+      );
+
+      if (cidadeEncontrada) {
+        resultado.innerHTML = `✅ <span class="sim">Sim, atendemos em <strong>${cidadeEncontrada}</strong>!</span><br><a href="https://wa.me/5511933285059" target="_blank">Fale conosco no WhatsApp</a>`;
       } else {
-        resultado.innerHTML = `❌ <span class="nao">Infelizmente ainda não atendemos em <strong>${cidadeFormatada}</strong>.</span>`;
+        resultado.innerHTML = `❌ <span class="nao">Infelizmente ainda não atendemos em <strong>${input}</strong>.</span>`;
       }
     }
   </script>
